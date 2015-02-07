@@ -8,8 +8,7 @@
 #include "ofxCvColorImage.h"
 #include "ofxCvGrayscaleImage.h"
 #include "ofxCvHaarFinder.h"
-#include "ofxIldaFrame.h"
-#include "ofxIldaRenderTarget.h"
+#include "ofxEtherdream.h"
 
 class ofApp : public ofBaseApp{
 
@@ -29,11 +28,13 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 
     private:
-        ofImage smileyImage;
+        vector<ofxIlda::Point> smileyPoints;
     
         ofVideoGrabber videoGrabber;
 
-        ofxCvHaarFinder cvHaarfinder;
+        ofxCvHaarFinder cvHaarFinder;
         ofxCvColorImage videoCvColorImage;
         ofxCvGrayscaleImage videoCvGrayscaleImage;
+    
+        ofxEtherdream etherdream;
 };
