@@ -1,31 +1,23 @@
 #include "ofApp.h"
 
-#include "ofxIldaFrame.h"
-#include "ofxIldaRenderTarget.h"
-
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofImage smileyImage("smiley.png");
+    ofPolyline circlePolyline;
+    circlePolyline.arc(ofPoint(0, 0, 0), 1, 1, 0, 360, true, 20);
 
-    ofxIlda::RenderTarget renderTarget;
-    memset(&renderTarget.params, 0, sizeof(renderTarget.params));
-    renderTarget.params.cv.doFindHoles = true;
-    renderTarget.setup(smileyImage.getWidth(), smileyImage.getHeight());
-    
-    ofPushStyle();
-    renderTarget.begin();
-    ofClear(0);
-    smileyImage.draw(0, 0);
-    renderTarget.end();
-    ofPopStyle();
-    
-    ofxIlda::Frame frame;
-    memset(&frame.params, 0, sizeof(frame.params));
-    frame.clear();
-    renderTarget.update(frame);
-    frame.update();
-    
-    smileyPoints = frame.getPoints();
+    ofPolyline leftEyePolyline;
+    leftEyePolyline.arc(ofPoint(0.4, -0.3, 0), 0.1, 0.2, 0, 360, true, 4);
+
+    ofPolyline rightEyePolyline;
+    rightEyePolyline.arc(ofPoint(-0.4, -0.3, 0), 0.1, 0.2, 0, 360, true, 4);
+
+    ofPolyline mouthPolyline;
+    mouthPolyline.arc(ofPoint(0, 0, 0), 0.8, 0.8, 30, 150, true, 8);
+
+    smileyPolylines.push_back(circlePolyline);
+    smileyPolylines.push_back(leftEyePolyline);
+    smileyPolylines.push_back(rightEyePolyline);
+    smileyPolylines.push_back(mouthPolyline);
     
     videoGrabber.initGrabber(CAM_WIDTH, CAM_HEIGHT);
     
@@ -33,6 +25,9 @@ void ofApp::setup(){
     videoCvGrayscaleImage.allocate(videoGrabber.width, videoGrabber.height);
     
     cvHaarFinder.setup("haarcascade_frontalface_default.xml");
+    
+    ildaFrame.params.output.transform.doFlipY = true;
+    ildaFrame.polyProcessor.params.targetPointCount = 2000;
     
     etherdream.setup();
     etherdream.setPPS(30000);
@@ -47,29 +42,36 @@ void ofApp::update(){
         videoCvColorImage.convertRgbToHsv();
         videoCvColorImage.convertToGrayscalePlanarImage(videoCvGrayscaleImage, 2);
         cvHaarFinder.findHaarObjects(videoCvGrayscaleImage, 100, 100);
+
+        ildaFrame.clear();
+        for(int i = 0; i < cvHaarFinder.blobs.size(); i++) {
+            float x = (cvHaarFinder.blobs[i].centroid.x / CAM_WIDTH);
+            float y = (cvHaarFinder.blobs[i].centroid.y / CAM_HEIGHT);
+
+            ofFloatColor color(ofRandom(1), ofRandom(1), ofRandom(1));
+            for (int j = 0; j < smileyPolylines.size(); j++) {
+                vector<ofPoint> points;
+                vector<ofPoint> vertices = smileyPolylines[j].getVertices();
+                for (int k = 0; k < vertices.size(); k++) {
+                    points.push_back(ofPoint(x + vertices[k].x * cvHaarFinder.blobs[i].boundingRect.width / CAM_WIDTH / 2,
+                                             y + vertices[k].y * cvHaarFinder.blobs[i].boundingRect.height / CAM_HEIGHT / 2)
+                                     );
+                }
+                ildaFrame.addPoly(points, color);
+            }
+        }
+        
+        ildaFrame.update();
     }
+
+    etherdream.setPoints(ildaFrame);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     videoCvGrayscaleImage.draw(ofGetWidth(), 0, -ofGetWidth(), ofGetHeight());
 
-    vector<ofxIlda::Point> points;
-    for(int i = 0; i < cvHaarFinder.blobs.size(); i++) {
-        float x = (cvHaarFinder.blobs[i].centroid.x / CAM_WIDTH) - 0.5;
-        float y = (cvHaarFinder.blobs[i].centroid.y / CAM_WIDTH) - 0.5;
-        
-        for (int j = 0; j < smileyPoints.size(); j++) {
-            float px = (float)smileyPoints[j].x / 65535.0 * cvHaarFinder.blobs[i].boundingRect.width / CAM_WIDTH;
-            float py = (float)smileyPoints[j].y / 65535.0 * cvHaarFinder.blobs[i].boundingRect.width / CAM_HEIGHT;
-            
-            ofCircle(ofGetWidth() - (x + px + 0.5) * ofGetWidth(), (y + py + 0.5) * ofGetHeight(), 2);
-
-            points.push_back(ofxIlda::Point((x + px) * 65535.0, (y + py) * 65535.0, 65535, 65535, 65535, 65535);
-        }
-    }
-    
-    etherdream.addPoints(points);
+    ildaFrame.draw(0, 0, ofGetWidth(), ofGetHeight());
 }
 
 //--------------------------------------------------------------
