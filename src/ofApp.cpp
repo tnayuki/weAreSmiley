@@ -41,7 +41,7 @@ void ofApp::update(){
         videoCvColorImage.setFromPixels(videoGrabber.getPixels(), CAM_WIDTH, CAM_HEIGHT);
         videoCvColorImage.convertRgbToHsv();
         videoCvColorImage.convertToGrayscalePlanarImage(videoCvGrayscaleImage, 2);
-        cvHaarFinder.findHaarObjects(videoCvGrayscaleImage, 100, 100);
+        cvHaarFinder.findHaarObjects(videoCvGrayscaleImage, 80, 80);
 
         ildaFrame.clear();
         for(int i = 0; i < cvHaarFinder.blobs.size(); i++) {

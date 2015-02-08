@@ -2,8 +2,8 @@
 
 #include "ofMain.h"
 
-#define CAM_WIDTH 1024
-#define CAM_HEIGHT 1024
+#define CAM_WIDTH 512
+#define CAM_HEIGHT 512
 
 #include "ofxCvColorImage.h"
 #include "ofxCvGrayscaleImage.h"
