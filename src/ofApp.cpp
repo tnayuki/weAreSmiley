@@ -71,7 +71,7 @@ void ofApp::update(){
 void ofApp::draw(){
     videoCvGrayscaleImage.draw(ofGetWidth(), 0, -ofGetWidth(), ofGetHeight());
 
-    ildaFrame.draw(0, 0, ofGetWidth(), ofGetHeight());
+    ildaFrame.draw(ofGetWidth(), 0, -ofGetWidth(), ofGetHeight());
 }
 
 //--------------------------------------------------------------
