@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#include "ofxIldaRenderTarget.h"
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofPolyline circlePolyline;
@@ -44,11 +46,12 @@ void ofApp::update(){
         cvHaarFinder.findHaarObjects(videoCvGrayscaleImage, 80, 80);
 
         ildaFrame.clear();
+
+        unsigned char smileyColorHue = 0;
         for(int i = 0; i < cvHaarFinder.blobs.size(); i++) {
             float x = (cvHaarFinder.blobs[i].centroid.x / CAM_WIDTH);
             float y = (cvHaarFinder.blobs[i].centroid.y / CAM_HEIGHT);
-
-            ofFloatColor color(ofRandom(1), ofRandom(1), ofRandom(1));
+            
             for (int j = 0; j < smileyPolylines.size(); j++) {
                 vector<ofPoint> points;
                 vector<ofPoint> vertices = smileyPolylines[j].getVertices();
@@ -57,10 +60,12 @@ void ofApp::update(){
                                              y + vertices[k].y * cvHaarFinder.blobs[i].boundingRect.height / CAM_HEIGHT / 2)
                                      );
                 }
-                ildaFrame.addPoly(points, color);
+                ildaFrame.addPoly(points, ofColor::fromHsb(smileyColorHue,255,255));
             }
+            
+            smileyColorHue += 32;
         }
-        
+    
         ildaFrame.update();
     }
 
@@ -76,7 +81,6 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
 }
 
 //--------------------------------------------------------------
